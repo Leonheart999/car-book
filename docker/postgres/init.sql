@@ -1,0 +1,3 @@
+CREATE USER  car_book WITH PASSWORD 'q1w2e3r4t5y6';
+
+CREATE DATABASE car_book OWNER car_book;
