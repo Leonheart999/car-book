@@ -37,23 +37,19 @@ public class SpringSecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.csrf().disable().authorizeHttpRequests(authorize -> {
-                    authorize.requestMatchers("logIn").permitAll().requestMatchers("register").permitAll().anyRequest()
-                            .authenticated();
-                }).httpBasic(withDefaults())
-                .formLogin(withDefaults()).build();
-
-
-
-//        http.authorizeRequests()
-//                .antMatchers("/secure**").hasAnyRole("ADMIN","USER")
-//                .anyRequest()
-//                .authenticated()
-//                .antMatchers("/home**").anonymous()
-//                .and()
-//                .formLogin().permitAll();
-//        http;
-
+        return http.csrf().disable()
+                .authorizeHttpRequests(authorize -> {
+                    authorize.requestMatchers("/register").permitAll();
+                    authorize.anyRequest().authenticated();
+                })
+                .formLogin(withDefaults())
+                .httpBasic(withDefaults())
+                .build();
     }
-
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//        return http.csrf().disable()
+//                .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
+//                .build();
+//    }
 }

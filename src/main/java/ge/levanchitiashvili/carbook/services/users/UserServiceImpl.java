@@ -17,13 +17,13 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl extends EntityToDtoConverter<User, UserDTO> implements UserService {
-    private final UserJPARepository userRepository;
+    private final UserJPARepository repository;
     @Lazy
     private final SecurityService securityService;
 
     @Override
     public User get(long id) {
-        Optional<User> user = userRepository.findById(id);
+        Optional<User> user = repository.findById(id);
         if (user.isEmpty()) {
             throw new RuntimeException(String.format("User with with id %s", id));
         }
@@ -39,7 +39,7 @@ public class UserServiceImpl extends EntityToDtoConverter<User, UserDTO> impleme
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void addNew(User user) {
-        if (userRepository.existsByUsername(user.getUsername())){
+        if (repository.existsByUsername(user.getUsername())){
             throw new RuntimeException(String.format("User with username %s already exists", user.getUsername()));
         }
         user.setActive(true);
@@ -49,7 +49,7 @@ public class UserServiceImpl extends EntityToDtoConverter<User, UserDTO> impleme
 
     @Override
     public User save(User user) {
-        return userRepository.save(user);
+        return repository.save(user);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class UserServiceImpl extends EntityToDtoConverter<User, UserDTO> impleme
 
     @Override
     public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsernameAndActiveTrue(username);
+        return repository.findByUsernameAndActiveTrue(username);
     }
 
     @Override
@@ -86,7 +86,7 @@ public class UserServiceImpl extends EntityToDtoConverter<User, UserDTO> impleme
     }
 
     private void validateUser(User user){
-        Optional<User> checker=userRepository.findByUsernameAndActiveTrue(user.getUsername());
+        Optional<User> checker= repository.findByUsernameAndActiveTrue(user.getUsername());
         if(checker.isPresent() && (user.getId()==null || !checker.get().getId().equals(user.getId()))){
             throw new RuntimeException("User with username " + user.getUsername() + " already exists");
         }
