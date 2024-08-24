@@ -67,7 +67,7 @@ public class UserServiceImpl extends EntityToDtoConverter<User, UserDTO> impleme
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void changePassword(String oldPassword, String newPassword) {
         securityService.changePassword(oldPassword, newPassword);
     }

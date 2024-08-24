@@ -1,8 +1,9 @@
 package ge.levanchitiashvili.carbook.dtos.cars;
 
-import jakarta.persistence.Column;
+
 
 public class CarDTO {
+    private Long id;
     private String stateNumber;
     private String winCode;
     private String color;

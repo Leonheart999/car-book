@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import ge.levanchitiashvili.carbook.models.security.User;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.experimental.FieldNameConstants;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
 @Entity
+@FieldNameConstants
 @Table(name = "car_provided_services")
 @SequenceGenerator(name = "cardProvidedServiceIdSeq", sequenceName = "car_provided_services_id_seq", allocationSize = 1)
 public class CarProvidedService {

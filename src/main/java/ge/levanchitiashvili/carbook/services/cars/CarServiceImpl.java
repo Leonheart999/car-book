@@ -4,11 +4,13 @@ import ge.levanchitiashvili.carbook.config.EntityToDtoConverter;
 
 import ge.levanchitiashvili.carbook.dtos.cars.CarDTO;
 import ge.levanchitiashvili.carbook.models.cars.Car;
+import ge.levanchitiashvili.carbook.models.cars.CarProvidedService;
 import ge.levanchitiashvili.carbook.repositories.jpa.cars.CarJPARepository;
 import ge.levanchitiashvili.carbook.repositories.jpa.cars.CarProvidedServiceJPARepository;
 import ge.levanchitiashvili.carbook.requests.cars.CarEditRequest;
 
 import ge.levanchitiashvili.carbook.requests.cars.CarSearchRequest;
+import ge.levanchitiashvili.carbook.requests.cars.NewCarProvidedServiceRequest;
 import ge.levanchitiashvili.carbook.requests.cars.NewCarRequest;
 import ge.levanchitiashvili.carbook.services.security.SecurityService;
 import jakarta.persistence.criteria.Predicate;
@@ -82,8 +84,9 @@ public class CarServiceImpl extends EntityToDtoConverter<Car, CarDTO> implements
     }
 
     @Override
-    public Car save(Car Car) {
-        return repository.save(Car);
+    @Transactional(rollbackFor = Exception.class)
+    public Car save(Car car) {
+        return repository.save(car);
     }
 
     @Override
@@ -100,20 +103,65 @@ public class CarServiceImpl extends EntityToDtoConverter<Car, CarDTO> implements
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void delete(long id) {
         Car car = get(id);
         car.setActive(false);
         save(car);
     }
 
+    @Override
+    public Page<CarProvidedService> getCarProvidedServices(long carId, Pageable pageable) {
+        return carProvidedServiceJPARepository.findAll((root, query, cb) -> {
+            Predicate predicate = cb.conjunction();
+            predicate = cb.and(predicate, cb.equal(root.get(CarProvidedService.Fields.carId), carId));
+            return predicate;
+        },pageable);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public CarProvidedService addCarProvidedService(long carId, NewCarProvidedServiceRequest newCarProvidedServiceRequest) {
+        CarProvidedService carProvidedService=new CarProvidedService();
+        get(carId);
+        carProvidedService.setCarId(carId);
+        carProvidedService.setProvidedService(newCarProvidedServiceRequest.getProvidedService());
+        carProvidedService.setProvidedService(newCarProvidedServiceRequest.getProvidedService());
+        carProvidedService.setDate(newCarProvidedServiceRequest.getDate());
+        carProvidedService.setPrice(newCarProvidedServiceRequest.getPrice());
+        return saveCarProvidedService(carProvidedService);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public CarProvidedService saveCarProvidedService(CarProvidedService carProvidedService) {
+        return carProvidedServiceJPARepository.save(carProvidedService);
+    }
+
+    @Override
+    public CarProvidedService getCarProvidedService(long carProvidedServiceId){
+        Optional<CarProvidedService> carProvidedService=carProvidedServiceJPARepository.findById(carProvidedServiceId);
+        if (carProvidedService.isEmpty()) {
+            throw new RuntimeException(String.format("Car provided service with with id %s", carProvidedServiceId));
+        }
+        return carProvidedService.get();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteCarProvidedService(long carProvidedServiceId){
+        CarProvidedService carProvidedService=getCarProvidedService(carProvidedServiceId);
+        carProvidedServiceJPARepository.delete(carProvidedService);
+    }
+
     private void validateCar(Car car) {
         StringBuilder errors = new StringBuilder();
         Optional<Car> exists = repository.findByStateNumberAndActiveTrue(car.getStateNumber());
-        if (exists.isPresent() && !exists.get().getId().equals(car.getId())) {
+        if (exists.isPresent() && car.getId() != null && !exists.get().getId().equals(car.getId())) {
             errors.append(String.format("Car with state number %s already exists", car.getStateNumber()));
         }
         exists = repository.findByWinCodeAndActiveTrue(car.getStateNumber());
-        if (exists.isPresent() && !exists.get().getId().equals(car.getId())) {
+        if (exists.isPresent() && car.getId() != null && !exists.get().getId().equals(car.getId())) {
             if (!errors.isEmpty()) {
                 errors.append("\n");
             }
